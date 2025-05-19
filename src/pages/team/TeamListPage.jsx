@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { findTeamList } from "../../api/teamApi";
 import { Link } from "react-router-dom";
+import { createTeam as apiCreateTeam } from "../../api/teamApi"; // Updated
 
 const TeamListPage = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [newTeamPopup, setNewTeamPopup] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -13,6 +16,7 @@ const TeamListPage = () => {
         const response = await findTeamList(); // Fetch teams from API
         if (response && response.teams) {
           setTeams(response.teams); // Update state with the teams array
+          console.log(response.teams);
         } else {
           setTeams([]); // Fallback to an empty array if no teams are found
         }
@@ -26,6 +30,16 @@ const TeamListPage = () => {
 
     loadTeams();
   }, []);
+
+  const handleCreateTeam = async () => {
+    try {
+      const teamCreateRequest = { teamName: newTeamName };
+      await apiCreateTeam(teamCreateRequest);
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to create team:", err.response || err);
+    }
+  };
 
   if (loading) {
     return <p className="text-center mt-4">팀 목록을 불러오는 중...</p>;
@@ -54,6 +68,43 @@ const TeamListPage = () => {
             </li>
           ))}
         </ul>
+      )}
+      {newTeamPopup ? (
+        <div className="w-full m-auto mt-5 rounded-lg p-5 bg-white shadow-md">
+          <label className="block text-m font-medium text-gray-700 mb-1">
+            새 팀 이름
+          </label>
+          <input
+            value={newTeamName}
+            onChange={(e) => setNewTeamName(e.target.value)}
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+            placeholder="팀 이름을 입력하세요"
+          ></input>
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                handleCreateTeam();
+                setNewTeamPopup(false);
+              }}
+              className="mt-5 px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition"
+            >
+              팀 생성하기
+            </button>
+            <button
+              onClick={() => setNewTeamPopup(false)}
+              className="mt-5 ml-5 px-8 py-3 bg-red-500 text-white text-lg font-semibold rounded-lg hover:bg-red-600 transition"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setNewTeamPopup(true)}
+          className="mt-5 px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition mb-12"
+        >
+          팀 생성하기
+        </button>
       )}
     </div>
   );

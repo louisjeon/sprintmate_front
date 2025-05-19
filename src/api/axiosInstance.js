@@ -2,7 +2,7 @@ import axios from "axios";
 import { getToken } from "../utils/tokenManager"; // added import
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080", // Remove the extra `/api` prefix
+  baseURL: import.meta.env.VITE_API, // Remove the extra `/api` prefix
   headers: {
     "Content-Type": "application/json",
   },

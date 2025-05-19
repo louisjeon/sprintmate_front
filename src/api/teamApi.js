@@ -8,7 +8,7 @@ const API_BASE_PATH = "/api/teams";
  * @returns {Promise<TeamListResponse>}
  */
 export const findTeamList = async () => {
-  const response = await axiosInstance.get(`${API_BASE_PATH}/me`);
+  const response = await axiosInstance.get(`${API_BASE_PATH}`);
   return response.data;
 };
 
@@ -21,9 +21,7 @@ export const findTeamList = async () => {
  */
 export const createTeam = async (teamCreateRequest) => {
   // According to the OpenAPI spec, 'request' is a query parameter containing TeamCreateRequest schema.
-  const response = await axiosInstance.post(API_BASE_PATH, null, {
-    params: { request: teamCreateRequest },
-  });
+  const response = await axiosInstance.post(API_BASE_PATH, teamCreateRequest);
   return response.data;
 };
 

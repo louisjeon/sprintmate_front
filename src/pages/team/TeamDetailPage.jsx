@@ -156,7 +156,7 @@ const TeamDetailPage = () => {
         {/* 팀 삭제 */}
         <button
           onClick={handleDeleteTeam}
-          className="bg-red-500 text-white px-3 py-2 rounded mt-6 hover:bg-red-600" // Adjusted button style
+          className="bg-red-500 ml-2 text-white px-3 py-2 rounded mt-6 hover:bg-red-600" // Adjusted button style
         >
           팀 삭제
         </button>
