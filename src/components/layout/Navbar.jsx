@@ -9,7 +9,7 @@ const Navbar = ({ className }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   return (
@@ -30,7 +30,7 @@ const Navbar = ({ className }) => {
           <input
             type="text"
             placeholder="Search Issue..."
-            className="w-2/3 p-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-2/3 p-2 pl-5 pr-5 text-black rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>
       )}

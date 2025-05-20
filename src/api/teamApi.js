@@ -8,7 +8,7 @@ const API_BASE_PATH = "/api/teams";
  * @returns {Promise<TeamListResponse>}
  */
 export const findTeamList = async () => {
-  const response = await axiosInstance.get(`${API_BASE_PATH}`);
+  const response = await axiosInstance.get(`${API_BASE_PATH}/me`);
   return response.data;
 };
 
@@ -70,7 +70,7 @@ export const deleteTeam = async (teamId) => {
  */
 export const inviteTeamMember = async (teamId, teamMemberInviteRequest) => {
   const response = await axiosInstance.post(
-    `${API_BASE_PATH}/${teamId}/member`,
+    `${API_BASE_PATH}/${teamId}/members`,
     teamMemberInviteRequest
   );
   return response.data;

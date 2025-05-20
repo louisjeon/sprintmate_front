@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signup as signupApi } from "../../api/authApi";
+import { login as loginApi } from "../../api/authApi"; // Import the API function
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const SignupPage = () => {
   });
   const [errorMsg, setErrorMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const loginAction = useAuthStore((state) => state.login); // Get the login action
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +39,21 @@ const SignupPage = () => {
 
     try {
       await signupApi({ email, password, username });
-      navigate("/login");
+      window.alert("회원가입을 성공하였습니다.");
+      try {
+        const response = await loginApi({ email, password });
+        loginAction(response); // Pass the entire response to loginAction
+        navigate("/"); // Redirect to homepage on successful login
+      } catch (error) {
+        console.error("Login failed:", error);
+        if (error.response && error.response.status === 401) {
+          setErrorMsg("이메일 또는 비밀번호가 올바르지 않습니다.");
+        } else {
+          setErrorMsg("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error("Signup failed:", error);
       setErrorMsg("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");

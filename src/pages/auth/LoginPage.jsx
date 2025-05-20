@@ -66,7 +66,15 @@ const LoginPage = () => {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              console.log(e.key);
+              if (e.key == "Enter") {
+                handleLogin();
+              }
+            }}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             placeholder="비밀번호를 입력하세요"
           />

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { findProjectDetail } from "../../api/projectApi"; // Updated
 import { createIssue as apiCreateIssue } from "../../api/issueApi"; // Updated and aliased
 import { findTeamDetail } from "../../api/teamApi"; // For fetching team members
+import { useNavigate } from "react-router-dom";
 
 const ProjectDetailPage = () => {
   const { teamId, projectId } = useParams();
@@ -17,6 +18,7 @@ const ProjectDetailPage = () => {
     assignees: [],
   });
   const [teamMembers, setTeamMembers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadProjectDetails = async () => {
@@ -115,12 +117,21 @@ const ProjectDetailPage = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">이슈 목록</h2>
             {!isAddingIssue && (
-              <button
-                onClick={() => setIsAddingIssue(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-              >
-                이슈 추가
-              </button>
+              <div>
+                {" "}
+                <button
+                  onClick={() => setIsAddingIssue(true)}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                >
+                  이슈 추가
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="bg-gray-500 text-white ml-5 px-4 py-2 rounded hover:bg-gray-600 transition"
+                >
+                  뒤로 가기
+                </button>
+              </div>
             )}
           </div>
 

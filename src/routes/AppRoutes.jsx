@@ -8,12 +8,14 @@ import TeamListPage from "../pages/team/TeamListPage";
 import TeamDetailPage from "../pages/team/TeamDetailPage";
 import ProjectDetailPage from "../pages/project/ProjectDetailPage";
 import ErrorBoundary from "../components/layout/ErrorBoundary";
+import ProfilePage from "../pages/profile/ProfilePage";
 
 export const AppRoutes = [
   <Route element={<MainLayout />} key="mainLayout">
     <Route path="/" element={<HomePage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/signup" element={<SignupPage />} />
+    <Route path="/profile" element={<ProfilePage />} />
     <Route
       path="/teams"
       element={

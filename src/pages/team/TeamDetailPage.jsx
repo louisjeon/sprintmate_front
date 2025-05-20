@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { findTeamDetail, deleteTeam as apiDeleteTeam } from "../../api/teamApi"; // Updated
 import { createProject as apiCreateProject } from "../../api/projectApi"; // Updated
+import { inviteTeamMember as apiInviteTeamMember } from "../../api/teamApi";
 import { Users, CalendarClock } from "lucide-react";
 
 const TeamDetailPage = () => {
@@ -10,7 +11,12 @@ const TeamDetailPage = () => {
   const [team, setTeam] = useState(null);
   const [error, setError] = useState("");
   const [isAddingProject, setIsAddingProject] = useState(false);
+  const [isAddingMember, setIsAddingMember] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
+  const [newMemberDetail, setNewMemberDetail] = useState({
+    email: "",
+    role: "",
+  });
 
   useEffect(() => {
     const loadTeamDetails = async () => {
@@ -46,6 +52,28 @@ const TeamDetailPage = () => {
       setNewProjectName("");
     } catch (err) {
       console.error("Failed to create project:", err.response || err);
+    }
+  };
+
+  const handleInviteMember = async () => {
+    try {
+      const newMember = await apiInviteTeamMember(teamId, newMemberDetail);
+
+      setTeam((prev) => ({
+        ...prev,
+        teamMembers: [
+          ...prev.teamMembers,
+          {
+            teamMemberId: newMember.teamMemberId,
+            memberUsername: newMember.memberUsername,
+            memberRoleName: newMember.roleName,
+          }, // Adjust based on actual needs
+        ],
+      }));
+      setIsAddingMember(false);
+      setNewMemberDetail({ email: "", role: "" });
+    } catch (err) {
+      console.error("Failed to add member:", err.response || err);
     }
   };
 
@@ -123,7 +151,7 @@ const TeamDetailPage = () => {
         </div>
 
         {/* 프로젝트 추가 */}
-        {isAddingProject ? (
+        {isAddingProject && (
           <div className="mt-6 flex gap-2">
             <input
               className="border px-2 py-1 rounded-md flex-grow" // Adjusted input style
@@ -144,27 +172,87 @@ const TeamDetailPage = () => {
               취소
             </button>
           </div>
-        ) : (
-          <button
-            onClick={() => setIsAddingProject(true)}
-            className="bg-green-500 text-white px-3 py-2 rounded mt-6 hover:bg-green-600" // Adjusted button style
-          >
-            프로젝트 추가
-          </button>
         )}
 
+        {/* 멤버 추가 */}
+        {isAddingMember && (
+          <div className="mt-6 flex gap-2">
+            <input
+              className="border px-2 py-1 rounded-md flex-grow" // Adjusted input style
+              value={newMemberDetail.email}
+              onChange={(e) =>
+                setNewMemberDetail({
+                  ...newMemberDetail,
+                  email: e.target.value,
+                })
+              }
+              placeholder="새 멤버 이메일"
+            />
+            <fieldset
+              value={newMemberDetail.role}
+              onChange={(e) => {
+                setNewMemberDetail({
+                  ...newMemberDetail,
+                  role: e.target.value,
+                });
+              }}
+            >
+              <legend>새 멤버 역할:</legend>
+              <input type="radio" id="OWNER" name="drone" value="OWNER" />
+              <label for="OWNER" className="mr-2">
+                OWNER
+              </label>
+              <input type="radio" id="EDITOR" name="drone" value="EDITOR" />
+              <label for="EDITOR" className="mr-2">
+                EDITOR
+              </label>
+              <input type="radio" id="VIEWER" name="drone" value="VIEWER" />
+              <label for="louie">VIEWER</label>
+            </fieldset>
+            <button
+              onClick={handleInviteMember}
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600" // Adjusted button style
+            >
+              추가
+            </button>
+            <button
+              onClick={() => setIsAddingMember(false)}
+              className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400" // Added cancel button
+            >
+              취소
+            </button>
+          </div>
+        )}
+        {!isAddingProject && !isAddingMember && (
+          <>
+            {" "}
+            <button
+              onClick={() => setIsAddingProject(true)}
+              className="bg-green-500 text-white px-3 py-2 rounded mt-6 hover:bg-green-600" // Adjusted button style
+            >
+              프로젝트 추가
+            </button>
+            <button
+              onClick={() => setIsAddingMember(true)}
+              className="bg-gray-500 ml-2 text-white px-3 py-2 rounded mt-6 hover:bg-gray-600" // Adjusted button style
+            >
+              팀원 추가
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => window.history.back()}
+          className="mt-6 ml-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition" // Adjusted button style
+        >
+          뒤로가기
+        </button>
         {/* 팀 삭제 */}
         <button
           onClick={handleDeleteTeam}
           className="bg-red-500 ml-2 text-white px-3 py-2 rounded mt-6 hover:bg-red-600" // Adjusted button style
         >
           팀 삭제
-        </button>
-        <button
-          onClick={() => window.history.back()}
-          className="mt-6 ml-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition" // Adjusted button style
-        >
-          뒤로가기
         </button>
       </div>
     </div>
