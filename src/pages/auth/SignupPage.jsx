@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signup as signupApi } from "../../api/authApi";
 import { login as loginApi } from "../../api/authApi"; // Import the API function
+import { useAuthStore } from "../../stores/authStore"; // Import the store
 
 const SignupPage = () => {
   const navigate = useNavigate();

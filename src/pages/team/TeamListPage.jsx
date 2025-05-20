@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { findTeamList } from "../../api/teamApi";
 import { Link } from "react-router-dom";
 import { createTeam as apiCreateTeam } from "../../api/teamApi"; // Updated
+import { useAuthStore } from "../../stores/authStore";
 
 const TeamListPage = () => {
   const [teams, setTeams] = useState([]);
@@ -9,6 +10,7 @@ const TeamListPage = () => {
   const [error, setError] = useState("");
   const [newTeamPopup, setNewTeamPopup] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -40,6 +42,10 @@ const TeamListPage = () => {
       console.error("Failed to create team:", err.response || err);
     }
   };
+
+  if (!isAuthenticated) {
+    return <p className="text-center mt-4">로그인이 필요한 서비스입니다.</p>;
+  }
 
   if (loading) {
     return <p className="text-center mt-4">팀 목록을 불러오는 중...</p>;
