@@ -34,8 +34,10 @@ const ProjectDetailPage = () => {
       try {
         const data = await findProjectDetail(teamId, projectId); // Updated
         setProject(data);
+        console.log(data);
         if (data && data.issues) {
           setIssues(data.issues);
+          console.log(data.issues);
         } else {
           setIssues([]);
         }
@@ -131,14 +133,81 @@ const ProjectDetailPage = () => {
   };
 
   const handleDeleteIssue = async (issueId) => {
-    try {
-      await apiDeleteIssue(teamId, projectId, issueId);
+    if (window.confirm("이슈를 삭제합니다.")) {
+      try {
+        await apiDeleteIssue(teamId, projectId, issueId);
 
-      setIssues(issues.map((issue) => issue.issueid !== currentIssueId));
-      setCurrentIssueId("");
-    } catch (err) {
-      console.error("Failed to delete issue:", err.response || err);
+        setIssues(issues.map((issue) => issue.issueid !== currentIssueId));
+        setCurrentIssueId("");
+      } catch (err) {
+        console.error("Failed to delete issue:", err.response || err);
+      }
     }
+  };
+
+  const IssueList = (issues) => {
+    return (
+      <ul className="divide-y divide-gray-200 border rounded-md">
+        {issues.map((issue) =>
+          !(issue.issueId == currentIssueId && isEditingIssue) ? (
+            <li
+              key={issue.issueId}
+              className="p-4 hover:bg-gray-100 transition"
+            >
+              <h3 className="text-lg font-semibold">{issue.issueTitle}</h3>
+              <p className="text-sm text-gray-600">{issue.issueDescription}</p>
+              <p className="text-sm text-gray-500">
+                스토리 포인트: {issue.issueStoryPoint}
+              </p>
+              <p className="text-sm text-gray-500">
+                할당자:{" "}
+                {issue.issueAssignees
+                  ?.map((assignee) => assignee.assigneeName)
+                  .join(", ") || "없음"}
+              </p>
+              <button
+                onClick={() => {
+                  console.log(issue);
+                  setIsEditingIssue(true);
+                  setCurrentIssueId(issue.issueId);
+                  setNewIssue({
+                    title: issue.issueTitle,
+                    description: issue.issueDescription,
+                    sp: issue.issueStoryPoint, // Reset to default integer SP
+                    status: issue.issueStatus,
+                    assignees: issue.issueAssignees.map(
+                      (assignee) => assignee.assigneeId
+                    ),
+                  });
+                }}
+                className="bg-green-500 mt-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                이슈 수정
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteIssue(issue.issueId);
+                }}
+                className="bg-red-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+              >
+                이슈 삭제
+              </button>
+            </li>
+          ) : (
+            AddOrEditIssue(
+              isAddingIssue,
+              newIssue,
+              teamMembers,
+              handleAddIssue,
+              handleUpdateIssue,
+              setIsAddingIssue,
+              setIsEditingIssue,
+              setNewIssue
+            )
+          )
+        )}
+      </ul>
+    );
   };
 
   if (!project) {
@@ -173,12 +242,15 @@ const ProjectDetailPage = () => {
         {/* 이슈 목록 */}
         <section>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">이슈 목록</h2>
-            {!isAddingIssue && !isEditingIssue && (
+            <h2 className="text-3xl font-bold text-gray-800">이슈 목록</h2>
+            {!isAddingIssue && (
               <div>
                 {" "}
                 <button
-                  onClick={() => setIsAddingIssue(true)}
+                  onClick={() => {
+                    setIsAddingIssue(true);
+                    setIsEditingIssue(false);
+                  }}
                   className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
                 >
                   이슈 추가
@@ -205,75 +277,41 @@ const ProjectDetailPage = () => {
               setIsEditingIssue,
               setNewIssue
             )}
-
           {issues.length > 0 ? (
-            <ul className="divide-y divide-gray-200 border rounded-md">
-              {issues.map((issue) =>
-                !(issue.issueId == currentIssueId && isEditingIssue) ? (
-                  <li
-                    key={issue.issueId}
-                    className="p-4 hover:bg-gray-100 transition"
-                  >
-                    <h3 className="text-lg font-semibold">
-                      {issue.issueTitle}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {issue.issueDescription}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      상태: {issue.issueStatus}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      스토리 포인트: {issue.issueStoryPoint}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      할당자:{" "}
-                      {issue.issueAssignees
-                        ?.map((assignee) => assignee.assigneeName)
-                        .join(", ") || "없음"}
-                    </p>
-                    <button
-                      onClick={() => {
-                        console.log(issue);
-                        setIsEditingIssue(true);
-                        setCurrentIssueId(issue.issueId);
-                        setNewIssue({
-                          title: issue.issueTitle,
-                          description: issue.issueDescription,
-                          sp: issue.issueStoryPoint, // Reset to default integer SP
-                          status: issue.issueStatus,
-                          assignees: issue.issueAssignees.map(
-                            (assignee) => assignee.assigneeId
-                          ),
-                        });
-                      }}
-                      className="bg-green-500 mt-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-                    >
-                      이슈 수정
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDeleteIssue(issue.issueId);
-                      }}
-                      className="bg-red-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-                    >
-                      이슈 삭제
-                    </button>
-                  </li>
-                ) : (
-                  AddOrEditIssue(
-                    isAddingIssue,
-                    newIssue,
-                    teamMembers,
-                    handleAddIssue,
-                    handleUpdateIssue,
-                    setIsAddingIssue,
-                    setIsEditingIssue,
-                    setNewIssue
-                  )
-                )
-              )}
-            </ul>
+            <>
+              <div className="flex">
+                <h3 className="text-2xl ml-2 mb-2 font-bold text-gray-800 flex-1">
+                  시작 전
+                </h3>
+                <h3 className="text-2xl ml-2 mb-2 font-bold text-gray-800 flex-1">
+                  진행중
+                </h3>
+                <h3 className="text-2xl ml-2 mb-2 font-bold text-gray-800 flex-1">
+                  완료
+                </h3>
+              </div>
+              <div className="flex justify-between">
+                <div className="flex-1">
+                  {IssueList(
+                    issues.filter(
+                      (issue) => issue.issueStatus === "NOT_STARTED"
+                    )
+                  )}
+                </div>
+                <div className="flex-1 border-l border-r border-gray">
+                  {IssueList(
+                    issues.filter(
+                      (issue) => issue.issueStatus === "IN_PROGRESS"
+                    )
+                  )}
+                </div>
+                <div className="flex-1">
+                  {IssueList(
+                    issues.filter((issue) => issue.issueStatus === "DONE")
+                  )}
+                </div>
+              </div>
+            </>
           ) : (
             <p className="text-gray-500">등록된 이슈가 없습니다.</p>
           )}

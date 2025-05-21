@@ -62,6 +62,7 @@ const AddOrEditIssue = (
                 value={member.teamMemberId}
                 checked={newIssue.assignees.includes(member.teamMemberId)}
                 onChange={(e) => {
+                  console.log(newIssue.assignees);
                   const memberIdAsNumber = parseInt(e.target.value, 10); // Ensure IDs are numbers
                   const isChecked = e.target.checked;
                   setNewIssue((prev) => ({
@@ -82,7 +83,7 @@ const AddOrEditIssue = (
           onClick={isAddingIssue ? handleAddIssue : handleUpdateIssue}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          추가
+          {isAddingIssue ? "추가" : "수정 완료"}
         </button>
         <button
           onClick={() => {
