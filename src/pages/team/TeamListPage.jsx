@@ -18,7 +18,6 @@ const TeamListPage = () => {
         const response = await findTeamList(); // Fetch teams from API
         if (response && response.teams) {
           setTeams(response.teams); // Update state with the teams array
-          console.log(response.teams);
         } else {
           setTeams([]); // Fallback to an empty array if no teams are found
         }

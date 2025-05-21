@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { findProjectDetail } from "../../api/projectApi"; // Updated
 import { createIssue as apiCreateIssue } from "../../api/issueApi"; // Updated and aliased
+import { updateIssue as apiUpdateIssue } from "../../api/issueApi";
+import { deleteIssue as apiDeleteIssue } from "../../api/issueApi";
 import { findTeamDetail } from "../../api/teamApi"; // For fetching team members
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +12,7 @@ const ProjectDetailPage = () => {
   const [project, setProject] = useState(null);
   const [issues, setIssues] = useState([]);
   const [isAddingIssue, setIsAddingIssue] = useState(false);
+  const [isEditingIssue, setIsEditingIssue] = useState(false);
   const [newIssue, setNewIssue] = useState({
     title: "",
     description: "",
@@ -17,8 +20,13 @@ const ProjectDetailPage = () => {
     status: "NOT_STARTED",
     assignees: [],
   });
+  const [currentIssueId, setCurrentIssueId] = useState("");
   const [teamMembers, setTeamMembers] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log(newIssue.assignees);
+  }, [newIssue.assignees]);
 
   useEffect(() => {
     const loadProjectDetails = async () => {
@@ -68,7 +76,9 @@ const ProjectDetailPage = () => {
         teamId,
         projectId,
         issueToCreate
-      ); // Updated
+      );
+
+      console.log(createdIssue);
       setIssues([...issues, createdIssue]);
       setIsAddingIssue(false);
       setNewIssue({
@@ -80,6 +90,53 @@ const ProjectDetailPage = () => {
       });
     } catch (err) {
       console.error("Failed to create issue:", err.response || err);
+    }
+  };
+
+  const handleUpdateIssue = async () => {
+    try {
+      // sp is now directly an integer from the state
+      const issueToUpdate = {
+        issueTitle: newIssue.title,
+        issueDescription: newIssue.description,
+        issueStoryPoint: newIssue.sp, // Directly use the integer value
+        issueStatus: newIssue.status,
+        teamMemberIds: newIssue.assignees,
+      };
+
+      const updatedIssue = await apiUpdateIssue(
+        teamId,
+        projectId,
+        currentIssueId,
+        issueToUpdate
+      ); // Updated
+      setIssues(
+        issues.map((issue) => {
+          issue.issueid == currentIssueId ? updatedIssue : issue;
+        })
+      );
+      setIsEditingIssue(false);
+      setCurrentIssueId("");
+      setNewIssue({
+        title: "",
+        description: "",
+        sp: 3, // Reset to default integer SP
+        status: "NOT_STARTED",
+        assignees: [],
+      });
+    } catch (err) {
+      console.error("Failed to update issue:", err.response || err);
+    }
+  };
+
+  const handleDeleteIssue = async (issueId) => {
+    try {
+      await apiDeleteIssue(teamId, projectId, issueId);
+
+      setIssues(issues.map((issue) => issue.issueid !== currentIssueId));
+      setCurrentIssueId("");
+    } catch (err) {
+      console.error("Failed to delete issue:", err.response || err);
     }
   };
 
@@ -116,7 +173,7 @@ const ProjectDetailPage = () => {
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">이슈 목록</h2>
-            {!isAddingIssue && (
+            {!isAddingIssue && !isEditingIssue && (
               <div>
                 {" "}
                 <button
@@ -127,13 +184,118 @@ const ProjectDetailPage = () => {
                 </button>
                 <button
                   onClick={() => navigate(-1)}
-                  className="bg-gray-500 text-white ml-5 px-4 py-2 rounded hover:bg-gray-600 transition"
+                  className="bg-gray-500 text-white ml-2 px-4 py-2 rounded hover:bg-gray-600 transition"
                 >
                   뒤로 가기
                 </button>
               </div>
             )}
           </div>
+
+          {/* 이슈 추가 폼 */}
+          {(isAddingIssue || isEditingIssue) && (
+            <div className="mt-4 p-4 border rounded-md bg-gray-50">
+              <h3 className="text-lg font-semibold mb-2">
+                {isAddingIssue ? "새 이슈 추가" : "이슈 수정"}
+              </h3>
+              <input
+                type="text"
+                placeholder="이슈 제목"
+                value={newIssue.title}
+                onChange={(e) =>
+                  setNewIssue({ ...newIssue, title: e.target.value })
+                }
+                className="w-full mb-2 p-2 border rounded"
+              />
+              <textarea
+                placeholder="이슈 설명"
+                value={newIssue.description}
+                onChange={(e) =>
+                  setNewIssue({ ...newIssue, description: e.target.value })
+                }
+                className="w-full mb-2 p-2 border rounded"
+              />
+              <input
+                type="number"
+                placeholder="스토리 포인트"
+                value={newIssue.sp}
+                onChange={(e) =>
+                  setNewIssue({
+                    ...newIssue,
+                    sp: parseInt(e.target.value, 10) || 0,
+                  })
+                }
+                className="w-full mb-2 p-2 border rounded"
+              />
+              <select
+                value={newIssue.status}
+                onChange={(e) =>
+                  setNewIssue({ ...newIssue, status: e.target.value })
+                }
+                className="w-full mb-2 p-2 border rounded"
+              >
+                <option value="NOT_STARTED">Not Started</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="DONE">Done</option>
+              </select>
+              <div className="mb-2">
+                <h4 className="text-sm font-semibold mb-1">할당자 선택</h4>
+                <div className="flex flex-wrap gap-2">
+                  {teamMembers.map((member) => (
+                    <label
+                      key={member.teamMemberId}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="checkbox"
+                        value={member.teamMemberId}
+                        checked={newIssue.assignees.includes(
+                          member.teamMemberId
+                        )}
+                        onChange={(e) => {
+                          const memberIdAsNumber = parseInt(e.target.value, 10); // Ensure IDs are numbers
+                          const isChecked = e.target.checked;
+                          setNewIssue((prev) => ({
+                            ...prev,
+                            assignees: isChecked
+                              ? [...prev.assignees, memberIdAsNumber]
+                              : prev.assignees.filter(
+                                  (id) => id !== memberIdAsNumber
+                                ),
+                          }));
+                        }}
+                      />
+                      {member.memberUsername}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={isAddingIssue ? handleAddIssue : handleUpdateIssue}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  추가
+                </button>
+                <button
+                  onClick={() => {
+                    setIsAddingIssue(false);
+                    setIsEditingIssue(false);
+                    setNewIssue({
+                      title: "",
+                      description: "",
+                      sp: 3, // Default SP to an integer, e.g., 3 for M
+                      status: "NOT_STARTED",
+                      assignees: [],
+                    });
+                  }}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          )}
 
           {issues.length > 0 ? (
             <ul className="divide-y divide-gray-200 border rounded-md">
@@ -158,6 +320,33 @@ const ProjectDetailPage = () => {
                       ?.map((assignee) => assignee.assigneeName)
                       .join(", ") || "없음"}
                   </p>
+                  <button
+                    onClick={() => {
+                      console.log(issue);
+                      setIsEditingIssue(true);
+                      setCurrentIssueId(issue.issueId);
+                      setNewIssue({
+                        title: issue.issueTitle,
+                        description: issue.issueDescription,
+                        sp: issue.issueStoryPoint, // Reset to default integer SP
+                        status: issue.issueStatus,
+                        assignees: issue.issueAssignees.map(
+                          (assignee) => assignee.assigneeId
+                        ),
+                      });
+                    }}
+                    className="bg-green-500 mt-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                  >
+                    이슈 수정
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDeleteIssue(issue.issueId);
+                    }}
+                    className="bg-red-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                  >
+                    이슈 삭제
+                  </button>
                 </li>
               ))}
             </ul>
@@ -165,97 +354,6 @@ const ProjectDetailPage = () => {
             <p className="text-gray-500">등록된 이슈가 없습니다.</p>
           )}
         </section>
-
-        {/* 이슈 추가 폼 */}
-        {isAddingIssue && (
-          <div className="mt-4 p-4 border rounded-md bg-gray-50">
-            <h3 className="text-lg font-semibold mb-2">새 이슈 추가</h3>
-            <input
-              type="text"
-              placeholder="이슈 제목"
-              value={newIssue.title}
-              onChange={(e) =>
-                setNewIssue({ ...newIssue, title: e.target.value })
-              }
-              className="w-full mb-2 p-2 border rounded"
-            />
-            <textarea
-              placeholder="이슈 설명"
-              value={newIssue.description}
-              onChange={(e) =>
-                setNewIssue({ ...newIssue, description: e.target.value })
-              }
-              className="w-full mb-2 p-2 border rounded"
-            />
-            <input
-              type="number"
-              placeholder="스토리 포인트"
-              value={newIssue.sp}
-              onChange={(e) =>
-                setNewIssue({
-                  ...newIssue,
-                  sp: parseInt(e.target.value, 10) || 0,
-                })
-              }
-              className="w-full mb-2 p-2 border rounded"
-            />
-            <select
-              value={newIssue.status}
-              onChange={(e) =>
-                setNewIssue({ ...newIssue, status: e.target.value })
-              }
-              className="w-full mb-2 p-2 border rounded"
-            >
-              <option value="NOT_STARTED">Not Started</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="DONE">Done</option>
-            </select>
-            <div className="mb-2">
-              <h4 className="text-sm font-semibold mb-1">할당자 선택</h4>
-              <div className="flex flex-wrap gap-2">
-                {teamMembers.map((member) => (
-                  <label
-                    key={member.teamMemberId}
-                    className="flex items-center gap-2"
-                  >
-                    <input
-                      type="checkbox"
-                      value={member.teamMemberId}
-                      checked={newIssue.assignees.includes(member.teamMemberId)}
-                      onChange={(e) => {
-                        const memberIdAsNumber = parseInt(e.target.value, 10); // Ensure IDs are numbers
-                        const isChecked = e.target.checked;
-                        setNewIssue((prev) => ({
-                          ...prev,
-                          assignees: isChecked
-                            ? [...prev.assignees, memberIdAsNumber]
-                            : prev.assignees.filter(
-                                (id) => id !== memberIdAsNumber
-                              ),
-                        }));
-                      }}
-                    />
-                    {member.memberUsername}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleAddIssue}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                추가
-              </button>
-              <button
-                onClick={() => setIsAddingIssue(false)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

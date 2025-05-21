@@ -67,7 +67,6 @@ const LoginPage = () => {
             type="password"
             value={password}
             onKeyDown={(e) => {
-              console.log(e.key);
               if (e.key == "Enter") {
                 handleLogin();
               }
