@@ -22,22 +22,16 @@ const ProjectDetailPage = () => {
     assignees: [],
   });
   const [currentIssueId, setCurrentIssueId] = useState("");
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(newIssue.assignees);
-  }, [newIssue.assignees]);
 
   useEffect(() => {
     const loadProjectDetails = async () => {
       try {
         const data = await findProjectDetail(teamId, projectId); // Updated
         setProject(data);
-        console.log(data);
         if (data && data.issues) {
           setIssues(data.issues);
-          console.log(data.issues);
         } else {
           setIssues([]);
         }
@@ -81,7 +75,6 @@ const ProjectDetailPage = () => {
         issueToCreate
       );
 
-      console.log(createdIssue);
       setIssues([...issues, createdIssue]);
       setIsAddingIssue(false);
       setNewIssue({
@@ -113,11 +106,16 @@ const ProjectDetailPage = () => {
         currentIssueId,
         issueToUpdate
       ); // Updated
-      setIssues(
-        issues.map((issue) => {
-          issue.issueid == currentIssueId ? updatedIssue : issue;
-        })
+
+      console.log(issueToUpdate);
+
+      console.log(updatedIssue);
+
+      const newIssues = issues.map((issue) =>
+        issue.issueId == currentIssueId ? updatedIssue : issue
       );
+      console.log(newIssues);
+      setIssues(newIssues);
       setIsEditingIssue(false);
       setCurrentIssueId("");
       setNewIssue({
@@ -137,7 +135,7 @@ const ProjectDetailPage = () => {
       try {
         await apiDeleteIssue(teamId, projectId, issueId);
 
-        setIssues(issues.map((issue) => issue.issueid !== currentIssueId));
+        setIssues(issues.filter((issue) => issue.issueId !== issueId));
         setCurrentIssueId("");
       } catch (err) {
         console.error("Failed to delete issue:", err.response || err);
@@ -167,7 +165,6 @@ const ProjectDetailPage = () => {
               </p>
               <button
                 onClick={() => {
-                  console.log(issue);
                   setIsEditingIssue(true);
                   setCurrentIssueId(issue.issueId);
                   setNewIssue({
@@ -269,6 +266,7 @@ const ProjectDetailPage = () => {
           {/* 이슈 추가 폼 */}
           {isAddingIssue &&
             AddOrEditIssue(
+              currentIssueId,
               isAddingIssue,
               newIssue,
               teamMembers,
@@ -295,22 +293,20 @@ const ProjectDetailPage = () => {
                 <div className="flex-1">
                   {IssueList(
                     issues.filter(
-                      (issue) =>
-                        issue.issueStatus === "NOT_STARTED" ||
-                        console.log(issue)
+                      (issue) => issue?.issueStatus === "NOT_STARTED"
                     )
                   )}
                 </div>
                 <div className="flex-1 border-l border-r border-gray">
                   {IssueList(
                     issues.filter(
-                      (issue) => issue.issueStatus === "IN_PROGRESS"
+                      (issue) => issue?.issueStatus === "IN_PROGRESS"
                     )
                   )}
                 </div>
                 <div className="flex-1">
                   {IssueList(
-                    issues.filter((issue) => issue.issueStatus === "DONE")
+                    issues.filter((issue) => issue?.issueStatus === "DONE")
                   )}
                 </div>
               </div>

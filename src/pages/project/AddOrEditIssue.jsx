@@ -63,7 +63,6 @@ const AddOrEditIssue = (
                 value={member.teamMemberId}
                 checked={newIssue.assignees.includes(member.teamMemberId)}
                 onChange={(e) => {
-                  console.log(newIssue.assignees);
                   const memberIdAsNumber = parseInt(e.target.value, 10); // Ensure IDs are numbers
                   const isChecked = e.target.checked;
                   setNewIssue((prev) => ({
