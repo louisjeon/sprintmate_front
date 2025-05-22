@@ -195,6 +195,7 @@ const ProjectDetailPage = () => {
             </li>
           ) : (
             AddOrEditIssue(
+              issue.issueId,
               isAddingIssue,
               newIssue,
               teamMembers,
@@ -294,7 +295,9 @@ const ProjectDetailPage = () => {
                 <div className="flex-1">
                   {IssueList(
                     issues.filter(
-                      (issue) => issue.issueStatus === "NOT_STARTED"
+                      (issue) =>
+                        issue.issueStatus === "NOT_STARTED" ||
+                        console.log(issue)
                     )
                   )}
                 </div>

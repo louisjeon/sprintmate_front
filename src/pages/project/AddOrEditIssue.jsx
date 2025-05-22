@@ -1,4 +1,5 @@
 const AddOrEditIssue = (
+  issueId,
   isAddingIssue,
   newIssue,
   teamMembers,
@@ -9,7 +10,7 @@ const AddOrEditIssue = (
   setNewIssue
 ) => {
   return (
-    <div className="mt-4 p-4 border rounded-md bg-gray-50">
+    <div key={issueId} className="mt-4 p-4 border rounded-md bg-gray-50">
       <h3 className="text-lg font-semibold mb-2">
         {isAddingIssue ? "새 이슈 추가" : "이슈 수정"}
       </h3>
