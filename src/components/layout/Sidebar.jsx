@@ -9,7 +9,7 @@ const Sidebar = ({ className }) => {
 
   return (
     <div
-      className={`fixed top-15 left-0 h-full w-60 bg-gray-900 text-white py-6 ${className}`}
+      className={`md:fixed top-15 left-0 h-full md:w-60 bg-gray-900 text-white py-6 ${className}`}
     >
       <ul className="space-y-4">
         <li>
