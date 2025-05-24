@@ -12,7 +12,7 @@ const MainLayout = () => {
       {/* 메인 콘텐츠 영역 (Sidebar + Content) */}
       <div className="flex flex-1 pt-16 overflow-y-auto max-h-[calc(100vh-3rem)] py-4 max-md:flex-col">
         {/* Sidebar - 왼쪽 고정 */}
-        <Sidebar className="w-50 flex-1" />
+        <Sidebar className="w-50" />
 
         {/* 메인 콘텐츠 - 오른쪽, 스크롤 가능 */}
         <main className="flex-1 md:ml-60 bg-gray-50 ">
