@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { findProjectDetail } from "../../api/projectApi"; // Updated
-import { createIssue as apiCreateIssue } from "../../api/issueApi"; // Updated and aliased
+import {
+  createIssue as apiCreateIssue,
+  estimateStoryPoint,
+} from "../../api/issueApi"; // Updated and aliased
 import { updateIssue as apiUpdateIssue } from "../../api/issueApi";
 import { deleteIssue as apiDeleteIssue } from "../../api/issueApi";
 import { estimateStoryPoint as apiEstimateStoryPoint } from "../../api/issueApi";
@@ -28,12 +31,17 @@ const ProjectDetailPage = () => {
   const [currentIssueId, setCurrentIssueId] = useState("");
   const [teamMembers, setTeamMembers] = useState();
   const navigate = useNavigate();
-  const [cnt, setCnt] = useState(0);
+  const [cnt, setCnt] = useState({ i: 0 });
 
   useEffect(() => {
-    const counter = window.setInterval(() => setCnt(cnt + 1), 500);
-    return clearInterval(counter);
-  }, []);
+    if (cnt.i > 0) {
+      const timer = setTimeout(() => setCnt({ i: (cnt.i % 3) + 1 }), 100);
+      if (!isEstimatingStoryPoint) {
+        clearTimeout(timer);
+      }
+      return () => clearTimeout(timer);
+    }
+  }, [cnt]);
 
   useEffect(() => {
     console.log(cnt);
@@ -159,6 +167,7 @@ const ProjectDetailPage = () => {
 
   const handleEstimateStoryPoint = async () => {
     try {
+      setCnt({ i: 1 });
       setIsEstimatingStoryPoint(true);
       const { storyPoint } = await apiEstimateStoryPoint(
         teamId,
@@ -167,6 +176,13 @@ const ProjectDetailPage = () => {
       );
       setIsEstimatingStoryPoint(false);
       setViewIssue({ ...viewIssue, issueStoryPoint: storyPoint });
+      setIssues(
+        issues.map((issue) => {
+          return issue.issueId === viewIssue.issueId
+            ? { ...issue, issueStoryPoint: storyPoint }
+            : issue;
+        })
+      );
     } catch (err) {
       console.error("Failed to delete issue:", err.response || err);
     }
@@ -197,7 +213,7 @@ const ProjectDetailPage = () => {
                 }}
                 className="bg-green-500 mt-2 mr-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
               >
-                보기
+                상세
               </button>
               <button
                 onClick={() => {
@@ -285,6 +301,7 @@ const ProjectDetailPage = () => {
                   onClick={() => {
                     setIsAddingIssue(true);
                     setIsEditingIssue(false);
+                    setViewIssue(null);
                   }}
                   className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
                 >
@@ -328,7 +345,7 @@ const ProjectDetailPage = () => {
                           textColor=""
                         />
                         <h1 className="text-[#32cd32] text-2xl">
-                          스토리포인트 측정중{".".repeat((cnt % 3) + 1)}
+                          스토리포인트 측정중{".".repeat(cnt.i)}
                         </h1>
                       </div>
                     </div>
