@@ -67,7 +67,7 @@ export const updateIssue = async (
  */
 export const estimateStoryPoint = async (teamId, projectId, issueId) => {
   const response = await axiosInstance.post(
-    `${API_ISSUES_BASE_PATH(teamId, projectId)}/${issueId}`
+    `${API_ISSUES_BASE_PATH(teamId, projectId)}/${issueId}/story-point`
   );
   return response.data;
 };

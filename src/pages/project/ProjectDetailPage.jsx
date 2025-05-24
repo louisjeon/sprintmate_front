@@ -4,16 +4,20 @@ import { findProjectDetail } from "../../api/projectApi"; // Updated
 import { createIssue as apiCreateIssue } from "../../api/issueApi"; // Updated and aliased
 import { updateIssue as apiUpdateIssue } from "../../api/issueApi";
 import { deleteIssue as apiDeleteIssue } from "../../api/issueApi";
+import { estimateStoryPoint as apiEstimateStoryPoint } from "../../api/issueApi";
 import { findTeamDetail } from "../../api/teamApi"; // For fetching team members
 import { useNavigate } from "react-router-dom";
 import AddOrEditIssue from "./AddOrEditIssue";
+import { LifeLine } from "react-loading-indicators";
 
 const ProjectDetailPage = () => {
   const { teamId, projectId } = useParams();
   const [project, setProject] = useState(null);
   const [issues, setIssues] = useState([]);
+  const [viewIssue, setViewIssue] = useState(null);
   const [isAddingIssue, setIsAddingIssue] = useState(false);
   const [isEditingIssue, setIsEditingIssue] = useState(false);
+  const [isEstimatingStoryPoint, setIsEstimatingStoryPoint] = useState(false);
   const [newIssue, setNewIssue] = useState({
     title: "",
     description: "",
@@ -24,6 +28,16 @@ const ProjectDetailPage = () => {
   const [currentIssueId, setCurrentIssueId] = useState("");
   const [teamMembers, setTeamMembers] = useState();
   const navigate = useNavigate();
+  const [cnt, setCnt] = useState(0);
+
+  useEffect(() => {
+    const counter = window.setInterval(() => setCnt(cnt + 1), 500);
+    return clearInterval(counter);
+  }, []);
+
+  useEffect(() => {
+    console.log(cnt);
+  }, [cnt]);
 
   useEffect(() => {
     const loadProjectDetails = async () => {
@@ -143,6 +157,21 @@ const ProjectDetailPage = () => {
     }
   };
 
+  const handleEstimateStoryPoint = async () => {
+    try {
+      setIsEstimatingStoryPoint(true);
+      const { storyPoint } = await apiEstimateStoryPoint(
+        teamId,
+        projectId,
+        viewIssue.issueId
+      );
+      setIsEstimatingStoryPoint(false);
+      setViewIssue({ ...viewIssue, issueStoryPoint: storyPoint });
+    } catch (err) {
+      console.error("Failed to delete issue:", err.response || err);
+    }
+  };
+
   const IssueList = (issues) => {
     return (
       <ul className="divide-y divide-gray-200 border rounded-md">
@@ -153,7 +182,6 @@ const ProjectDetailPage = () => {
               className="p-4 hover:bg-gray-100 transition"
             >
               <h3 className="text-lg font-semibold">{issue.issueTitle}</h3>
-              <p className="text-sm text-gray-600">{issue.issueDescription}</p>
               <p className="text-sm text-gray-500">
                 스토리 포인트: {issue.issueStoryPoint}
               </p>
@@ -163,6 +191,14 @@ const ProjectDetailPage = () => {
                   ?.map((assignee) => assignee.assigneeName)
                   .join(", ") || "없음"}
               </p>
+              <button
+                onClick={() => {
+                  setViewIssue(issue);
+                }}
+                className="bg-green-500 mt-2 mr-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                보기
+              </button>
               <button
                 onClick={() => {
                   setIsEditingIssue(true);
@@ -177,9 +213,9 @@ const ProjectDetailPage = () => {
                     ),
                   });
                 }}
-                className="bg-green-500 mt-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                className="bg-gray-500 mt-2 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
               >
-                이슈 수정
+                수정
               </button>
               <button
                 onClick={() => {
@@ -187,7 +223,7 @@ const ProjectDetailPage = () => {
                 }}
                 className="bg-red-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-red-600 transition"
               >
-                이슈 삭제
+                삭제
               </button>
             </li>
           ) : (
@@ -245,6 +281,7 @@ const ProjectDetailPage = () => {
               <div>
                 {" "}
                 <button
+                  disabled={isEstimatingStoryPoint}
                   onClick={() => {
                     setIsAddingIssue(true);
                     setIsEditingIssue(false);
@@ -254,6 +291,7 @@ const ProjectDetailPage = () => {
                   이슈 추가
                 </button>
                 <button
+                  disabled={isEstimatingStoryPoint}
                   onClick={() => navigate(-1)}
                   className="bg-gray-500 text-white ml-2 px-4 py-2 rounded hover:bg-gray-600 transition"
                 >
@@ -277,7 +315,58 @@ const ProjectDetailPage = () => {
               setNewIssue
             )}
           {issues.length > 0 ? (
-            <>
+            <div className="relative">
+              {viewIssue && (
+                <div className="absolute p-5 bg-white border rounded-lg m-auto w-full h-[400px] z-[1]">
+                  {isEstimatingStoryPoint && (
+                    <div className="absolute flex flex-col items-center justify-evenly top-0 left-0 rounded-lg w-full h-[400px] z-[2] bg-black opacity-80">
+                      <div className="text-center">
+                        <LifeLine
+                          color="#32cd32"
+                          size="large"
+                          text=""
+                          textColor=""
+                        />
+                        <h1 className="text-[#32cd32] text-2xl">
+                          스토리포인트 측정중{".".repeat((cnt % 3) + 1)}
+                        </h1>
+                      </div>
+                    </div>
+                  )}
+                  <h1 className="text-2xl">제목: {viewIssue.issueTitle}</h1>
+                  <h1 className="text-2xl">
+                    설명: {viewIssue.issueDescription}
+                  </h1>
+                  <h1 className="text-2xl">
+                    스토리포인트: {viewIssue.issueStoryPoint}
+                  </h1>
+                  <h1 className="text-2xl">상태: {viewIssue.issueStatus}</h1>
+                  <h1 className="text-2xl">
+                    할당자:{" "}
+                    {viewIssue.issueAssignees
+                      ?.map((assignee) => assignee.assigneeName)
+                      .join(", ") || "없음"}
+                  </h1>
+                  <div className="absolute right-5 bottom-5">
+                    <button
+                      disabled={isEstimatingStoryPoint}
+                      onClick={handleEstimateStoryPoint}
+                      className="bg-green-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                    >
+                      SP 추산
+                    </button>
+                    <button
+                      disabled={isEstimatingStoryPoint}
+                      onClick={() => {
+                        setViewIssue(null);
+                      }}
+                      className="bg-red-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="flex">
                 <h3 className="text-2xl ml-2 mb-2 font-bold text-gray-800 flex-1">
                   시작 전
@@ -289,6 +378,7 @@ const ProjectDetailPage = () => {
                   완료
                 </h3>
               </div>
+
               <div className="flex justify-between">
                 <div className="flex-1">
                   {IssueList(
@@ -310,7 +400,7 @@ const ProjectDetailPage = () => {
                   )}
                 </div>
               </div>
-            </>
+            </div>
           ) : (
             <p className="text-gray-500">등록된 이슈가 없습니다.</p>
           )}
