@@ -5,6 +5,7 @@ const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API, // Remove the extra `/api` prefix
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": import.meta.env.VITE_API,
   },
   withCredentials: true,
 });
