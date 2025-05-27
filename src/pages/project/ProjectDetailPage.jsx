@@ -44,10 +44,6 @@ const ProjectDetailPage = () => {
   }, [cnt]);
 
   useEffect(() => {
-    console.log(cnt);
-  }, [cnt]);
-
-  useEffect(() => {
     const loadProjectDetails = async () => {
       try {
         const data = await findProjectDetail(teamId, projectId); // Updated
@@ -91,11 +87,15 @@ const ProjectDetailPage = () => {
         teamMemberIds: newIssue.assignees,
       };
 
+      console.log(issueToCreate);
+
       const createdIssue = await apiCreateIssue(
         teamId,
         projectId,
         issueToCreate
       );
+
+      console.log(createdIssue);
 
       setIssues([...issues, createdIssue]);
       setIsAddingIssue(false);
