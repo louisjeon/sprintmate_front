@@ -33,7 +33,7 @@ const IssueCard = ({
       <p className="text-sm text-gray-500">
         할당자:{" "}
         {issue?.issueAssignees
-          ?.map((assignee) => assignee.assigneeName)
+          ?.map((assignee) => assignee.teamMemberName)
           .join(", ") || "없음"}
       </p>
       <button
@@ -54,7 +54,7 @@ const IssueCard = ({
             sp: issue.issueStoryPoint, // Reset to default integer SP
             status: issue.issueStatus,
             assignees: issue.issueAssignees.map(
-              (assignee) => assignee.assigneeId
+              (assignee) => assignee.teamMemberId
             ),
           });
         }}

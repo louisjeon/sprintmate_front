@@ -83,7 +83,7 @@ const AddOrEditIssue = (
                   }));
                 }}
               />
-              {member.memberUsername}
+              {member.teamMemberName}
             </label>
           ))}
         </div>
