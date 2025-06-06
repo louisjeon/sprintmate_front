@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { findProjectDetail } from "../../api/projectApi"; // Updated
 import {
@@ -11,12 +11,22 @@ import { estimateStoryPoint as apiEstimateStoryPoint } from "../../api/issueApi"
 import { findTeamDetail } from "../../api/teamApi"; // For fetching team members
 import { useNavigate } from "react-router-dom";
 import AddOrEditIssue from "./AddOrEditIssue";
-import { LifeLine } from "react-loading-indicators";
+import { BlinkBlur, Atom, Mosaic, ThreeDot } from "react-loading-indicators";
+import IssueCard from "./IssueCard";
+import IssueBoardColumn from "./IssueBoardColumn";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+
+const defaultIssues = {
+  NOT_STARTED: [],
+  IN_PROGRESS: [],
+  DONE: [],
+};
 
 const ProjectDetailPage = () => {
   const { teamId, projectId } = useParams();
   const [project, setProject] = useState(null);
-  const [issues, setIssues] = useState([]);
+  const [issues, setIssues] = useState(defaultIssues);
   const [viewIssue, setViewIssue] = useState(null);
   const [isAddingIssue, setIsAddingIssue] = useState(false);
   const [isEditingIssue, setIsEditingIssue] = useState(false);
@@ -35,7 +45,7 @@ const ProjectDetailPage = () => {
 
   useEffect(() => {
     if (cnt.i > 0) {
-      const timer = setTimeout(() => setCnt({ i: (cnt.i % 3) + 1 }), 100);
+      const timer = setTimeout(() => setCnt({ i: (cnt.i % 3) + 1 }), 400);
       if (!isEstimatingStoryPoint) {
         clearTimeout(timer);
       }
@@ -49,9 +59,21 @@ const ProjectDetailPage = () => {
         const data = await findProjectDetail(teamId, projectId); // Updated
         setProject(data);
         if (data && data.issues) {
-          setIssues(data.issues);
+          const newIssues = defaultIssues;
+          data.issues.forEach((issue) => {
+            let has = false;
+            newIssues[issue["issueStatus"]].map((item) => {
+              if (item.issueId == issue.issueId) {
+                has = true;
+              }
+            });
+            if (!has) {
+              newIssues[issue["issueStatus"]].push(issue);
+            }
+          });
+          setIssues(newIssues);
         } else {
-          setIssues([]);
+          setIssues(defaultIssues);
         }
       } catch (err) {
         console.error("Failed to fetch project details:", err.response || err);
@@ -95,9 +117,13 @@ const ProjectDetailPage = () => {
         issueToCreate
       );
 
+      // setViewIssue(createdIssue);
+      // handleEstimateStoryPoint();
       console.log(createdIssue);
-
-      setIssues([...issues, createdIssue]);
+      const newIssues = issues;
+      console.log(newIssues);
+      newIssues[createdIssue["issueStatus"]].push(createdIssue);
+      setIssues(newIssues);
       setIsAddingIssue(false);
       setNewIssue({
         title: "",
@@ -111,33 +137,59 @@ const ProjectDetailPage = () => {
     }
   };
 
-  const handleUpdateIssue = async () => {
+  const handleUpdateIssue = async (argIssue, issueId, changeStatus) => {
     try {
       // sp is now directly an integer from the state
+      const issue = argIssue || newIssue;
+      console.log(argIssue);
       const issueToUpdate = {
-        issueTitle: newIssue.title,
-        issueDescription: newIssue.description,
-        issueStoryPoint: newIssue.sp, // Directly use the integer value
-        issueStatus: newIssue.status,
-        teamMemberIds: newIssue.assignees,
+        issueTitle: issue.title,
+        issueDescription: issue.description,
+        issueStoryPoint: issue.sp, // Directly use the integer value
+        issueStatus: issue.status,
+        teamMemberIds: issue.assignees,
       };
+
+      console.log(issueToUpdate);
 
       const updatedIssue = await apiUpdateIssue(
         teamId,
         projectId,
-        currentIssueId,
+        issueId || currentIssueId,
         issueToUpdate
       ); // Updated
 
-      console.log(issueToUpdate);
+      console.log(issue.status);
+      console.log(updatedIssue.issueStatus);
 
-      console.log(updatedIssue);
+      if (changeStatus) {
+        const newIssues = issues;
+        newIssues["NOT_STARTED"] = newIssues["NOT_STARTED"].filter(
+          (issue) => issue.issueId !== issueId
+        );
+        newIssues["IN_PROGRESS"] = newIssues["IN_PROGRESS"].filter(
+          (issue) => issue.issueId !== issueId
+        );
+        newIssues["DONE"] = newIssues["DONE"].filter(
+          (issue) => issue.issueId !== issueId
+        );
+        newIssues[updatedIssue["issueStatus"]].push(updatedIssue);
+        setIssues(newIssues);
+      } else {
+        const newIssues = {
+          NOT_STARTED: issues["NOT_STARTED"].map((issue) =>
+            issue.issueId == currentIssueId ? updatedIssue : issue
+          ),
+          IN_PROGRESS: issues["IN_PROGRESS"].map((issue) =>
+            issue.issueId == currentIssueId ? updatedIssue : issue
+          ),
+          DONE: issues["DONE"].map((issue) =>
+            issue.issueId == currentIssueId ? updatedIssue : issue
+          ),
+        };
+        setIssues(newIssues);
+      }
 
-      const newIssues = issues.map((issue) =>
-        issue.issueId == currentIssueId ? updatedIssue : issue
-      );
-      console.log(newIssues);
-      setIssues(newIssues);
       setIsEditingIssue(false);
       setCurrentIssueId("");
       setNewIssue({
@@ -157,7 +209,17 @@ const ProjectDetailPage = () => {
       try {
         await apiDeleteIssue(teamId, projectId, issueId);
 
-        setIssues(issues.filter((issue) => issue.issueId !== issueId));
+        const newIssues = {
+          NOT_STARTED: issues["NOT_STARTED"].filter(
+            (issue) => issue.issueId !== issueId
+          ),
+          IN_PROGRESS: issues["IN_PROGRESS"].filter(
+            (issue) => issue.issueId !== issueId
+          ),
+          DONE: issues["DONE"].filter((issue) => issue.issueId !== issueId),
+        };
+
+        setIssues(newIssues);
         setCurrentIssueId("");
       } catch (err) {
         console.error("Failed to delete issue:", err.response || err);
@@ -176,88 +238,29 @@ const ProjectDetailPage = () => {
       );
       setIsEstimatingStoryPoint(false);
       setViewIssue({ ...viewIssue, issueStoryPoint: storyPoint });
-      setIssues(
-        issues.map((issue) => {
+
+      const newIssues = {
+        NOT_STARTED: issues["NOT_STARTED"].map((issue) => {
           return issue.issueId === viewIssue.issueId
             ? { ...issue, issueStoryPoint: storyPoint }
             : issue;
-        })
-      );
+        }),
+        IN_PROGRESS: issues["IN_PROGRESS"].map((issue) => {
+          return issue.issueId === viewIssue.issueId
+            ? { ...issue, issueStoryPoint: storyPoint }
+            : issue;
+        }),
+        DONE: issues["DONE"].map((issue) => {
+          return issue.issueId === viewIssue.issueId
+            ? { ...issue, issueStoryPoint: storyPoint }
+            : issue;
+        }),
+      };
+
+      setIssues(newIssues);
     } catch (err) {
       console.error("Failed to delete issue:", err.response || err);
     }
-  };
-
-  const IssueList = (issues) => {
-    return (
-      <ul className="divide-y divide-gray-200 border rounded-md">
-        {issues.map((issue) =>
-          !(issue.issueId == currentIssueId && isEditingIssue) ? (
-            <li
-              key={issue.issueId}
-              className="p-4 hover:bg-gray-100 transition"
-            >
-              <h3 className="text-lg font-semibold">{issue.issueTitle}</h3>
-              <p className="text-sm text-gray-500">
-                스토리 포인트: {issue.issueStoryPoint}
-              </p>
-              <p className="text-sm text-gray-500">
-                할당자:{" "}
-                {issue.issueAssignees
-                  ?.map((assignee) => assignee.assigneeName)
-                  .join(", ") || "없음"}
-              </p>
-              <button
-                onClick={() => {
-                  setViewIssue(issue);
-                }}
-                className="bg-green-500 mt-2 mr-2 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-              >
-                상세
-              </button>
-              <button
-                onClick={() => {
-                  setIsEditingIssue(true);
-                  setCurrentIssueId(issue.issueId);
-                  setNewIssue({
-                    title: issue.issueTitle,
-                    description: issue.issueDescription,
-                    sp: issue.issueStoryPoint, // Reset to default integer SP
-                    status: issue.issueStatus,
-                    assignees: issue.issueAssignees.map(
-                      (assignee) => assignee.assigneeId
-                    ),
-                  });
-                }}
-                className="bg-gray-500 mt-2 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
-              >
-                수정
-              </button>
-              <button
-                onClick={() => {
-                  handleDeleteIssue(issue.issueId);
-                }}
-                className="bg-red-500 mt-2 ml-2 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                삭제
-              </button>
-            </li>
-          ) : (
-            AddOrEditIssue(
-              issue.issueId,
-              isAddingIssue,
-              newIssue,
-              teamMembers,
-              handleAddIssue,
-              handleUpdateIssue,
-              setIsAddingIssue,
-              setIsEditingIssue,
-              setNewIssue
-            )
-          )
-        )}
-      </ul>
-    );
   };
 
   if (!project) {
@@ -329,25 +332,49 @@ const ProjectDetailPage = () => {
               handleUpdateIssue,
               setIsAddingIssue,
               setIsEditingIssue,
-              setNewIssue
+              setNewIssue,
+              false
             )}
-          {issues.length > 0 ? (
+          {issues["NOT_STARTED"].length +
+            issues["IN_PROGRESS"].length +
+            issues["DONE"].length >
+          0 ? (
             <div className="relative">
               {viewIssue && (
                 <div className="absolute p-5 bg-white border rounded-lg m-auto w-full h-[400px] z-[1]">
                   {isEstimatingStoryPoint && (
                     <div className="absolute flex flex-col items-center justify-evenly top-0 left-0 rounded-lg w-full h-[400px] z-[2] bg-black opacity-80">
-                      <div className="text-center">
-                        <LifeLine
-                          color="#32cd32"
-                          size="large"
-                          text=""
-                          textColor=""
-                        />
-                        <h1 className="text-[#32cd32] text-2xl">
-                          스토리포인트 측정중{".".repeat(cnt.i)}
-                        </h1>
+                      <div className="flex items-center justify-evenly w-full">
+                        <div className="text-center">
+                          <Mosaic
+                            color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
+                            size="large"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <BlinkBlur
+                            color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
+                            size="small"
+                            text=""
+                            textColor=""
+                          />
+                        </div>
+                        <div className="text-center">
+                          <Atom
+                            color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
+                            size="large"
+                            text=""
+                            textColor=""
+                          />
+                        </div>
                       </div>
+                      <h1
+                        className="text-3xl bg-gradient-to-r bg-clip-text  text-transparent 
+            from-[#cd32cd] via-[#327fcd] to-[#327fcd]
+            animate-text"
+                      >
+                        Estimating Story Point{".".repeat(cnt.i)}
+                      </h1>
                     </div>
                   )}
                   <h1 className="text-2xl">제목: {viewIssue.issueTitle}</h1>
@@ -395,28 +422,67 @@ const ProjectDetailPage = () => {
                   완료
                 </h3>
               </div>
-
-              <div className="flex justify-between">
-                <div className="flex-1">
-                  {IssueList(
-                    issues.filter(
-                      (issue) => issue?.issueStatus === "NOT_STARTED"
-                    )
-                  )}
+              <DndProvider backend={HTML5Backend}>
+                <div className="flex justify-between">
+                  <div className="flex-1">
+                    <IssueBoardColumn
+                      issues={issues["NOT_STARTED"]}
+                      status="NOT_STARTED"
+                      currentIssueId={currentIssueId}
+                      newIssue={newIssue}
+                      setNewIssue={setNewIssue}
+                      isAddingIssue={isAddingIssue}
+                      isEditingIssue={isEditingIssue}
+                      setViewIssue={setViewIssue}
+                      setIsAddingIssue={setIsAddingIssue}
+                      setIsEditingIssue={setIsEditingIssue}
+                      setCurrentIssueId={setCurrentIssueId}
+                      handleUpdateIssue={handleUpdateIssue}
+                      handleDeleteIssue={handleDeleteIssue}
+                      teamMembers={teamMembers}
+                      handleAddIssue={handleAddIssue}
+                    />
+                  </div>
+                  <div className="flex-1 border-l border-r border-gray">
+                    <IssueBoardColumn
+                      issues={issues["IN_PROGRESS"]}
+                      status="IN_PROGRESS"
+                      currentIssueId={currentIssueId}
+                      newIssue={newIssue}
+                      setNewIssue={setNewIssue}
+                      isAddingIssue={isAddingIssue}
+                      isEditingIssue={isEditingIssue}
+                      setViewIssue={setViewIssue}
+                      setIsAddingIssue={setIsAddingIssue}
+                      setIsEditingIssue={setIsEditingIssue}
+                      setCurrentIssueId={setCurrentIssueId}
+                      handleUpdateIssue={handleUpdateIssue}
+                      handleDeleteIssue={handleDeleteIssue}
+                      teamMembers={teamMembers}
+                      handleAddIssue={handleAddIssue}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <IssueBoardColumn
+                      issues={issues["DONE"]}
+                      status="DONE"
+                      currentIssueId={currentIssueId}
+                      newIssue={newIssue}
+                      setNewIssue={setNewIssue}
+                      isAddingIssue={isAddingIssue}
+                      isEditingIssue={isEditingIssue}
+                      setViewIssue={setViewIssue}
+                      setIsAddingIssue={setIsAddingIssue}
+                      setIsEditingIssue={setIsEditingIssue}
+                      setCurrentIssueId={setCurrentIssueId}
+                      handleUpdateIssue={handleUpdateIssue}
+                      handleDeleteIssue={handleDeleteIssue}
+                      teamMembers={teamMembers}
+                      handleAddIssue={handleAddIssue}
+                    />
+                  </div>
                 </div>
-                <div className="flex-1 border-l border-r border-gray">
-                  {IssueList(
-                    issues.filter(
-                      (issue) => issue?.issueStatus === "IN_PROGRESS"
-                    )
-                  )}
-                </div>
-                <div className="flex-1">
-                  {IssueList(
-                    issues.filter((issue) => issue?.issueStatus === "DONE")
-                  )}
-                </div>
-              </div>
+              </DndProvider>
             </div>
           ) : (
             <p className="text-gray-500">등록된 이슈가 없습니다.</p>

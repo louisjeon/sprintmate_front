@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const AddOrEditIssue = (
   issueId,
   isAddingIssue,
@@ -7,7 +9,8 @@ const AddOrEditIssue = (
   handleUpdateIssue,
   setIsAddingIssue,
   setIsEditingIssue,
-  setNewIssue
+  setNewIssue,
+  storyPoint
 ) => {
   return (
     <div key={issueId} className="mt-4 p-4 border rounded-md bg-gray-50">
@@ -29,27 +32,34 @@ const AddOrEditIssue = (
         }
         className="w-full mb-2 p-2 border rounded"
       />
-      <input
-        type="number"
-        placeholder="스토리 포인트"
-        value={newIssue.sp}
-        onChange={(e) =>
-          setNewIssue({
-            ...newIssue,
-            sp: parseInt(e.target.value, 10) || 0,
-          })
-        }
-        className="w-full mb-2 p-2 border rounded"
-      />
-      <select
-        value={newIssue.status}
-        onChange={(e) => setNewIssue({ ...newIssue, status: e.target.value })}
-        className="w-full mb-2 p-2 border rounded"
-      >
-        <option value="NOT_STARTED">Not Started</option>
-        <option value="IN_PROGRESS">In Progress</option>
-        <option value="DONE">Done</option>
-      </select>
+      {storyPoint && (
+        <input
+          type="number"
+          placeholder="스토리 포인트"
+          value={newIssue.sp}
+          onChange={(e) =>
+            setNewIssue({
+              ...newIssue,
+              sp: parseInt(e.target.value, 10) || 0,
+            })
+          }
+          className="w-full mb-2 p-2 border rounded"
+        />
+      )}
+      {isAddingIssue && (
+        <select
+          value={newIssue.status}
+          onChange={(e) => {
+            setNewIssue({ ...newIssue, status: e.target.value });
+            setChangeIssueStatus(true);
+          }}
+          className="w-full mb-2 p-2 border rounded"
+        >
+          <option value="NOT_STARTED">Not Started</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="DONE">Done</option>
+        </select>
+      )}
       <div className="mb-2">
         <h4 className="text-sm font-semibold mb-1">할당자 선택</h4>
         <div className="flex flex-wrap gap-2">
@@ -80,7 +90,11 @@ const AddOrEditIssue = (
       </div>
       <div className="flex gap-2">
         <button
-          onClick={isAddingIssue ? handleAddIssue : handleUpdateIssue}
+          onClick={
+            isAddingIssue
+              ? handleAddIssue
+              : () => handleUpdateIssue(false, false, false)
+          }
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           {isAddingIssue ? "추가" : "수정 완료"}
