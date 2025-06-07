@@ -88,13 +88,17 @@ const ProjectDetailPage = () => {
         teamMemberIds: newIssue.assignees,
       };
 
-      console.log(issueToCreate);
+      setCnt({ i: 1 });
+      setIsEstimatingStoryPoint(true);
 
       const createdIssue = await apiCreateIssue(
         teamId,
         projectId,
         issueToCreate
       );
+
+      setIsEstimatingStoryPoint(false);
+
       const newIssues = { ...issues };
       newIssues[createdIssue.issueStatus].push(createdIssue);
       setIssues(newIssues);
@@ -274,18 +278,48 @@ const ProjectDetailPage = () => {
           </div>
 
           {isAddingIssue &&
-            AddOrEditIssue(
-              currentIssueId,
-              isAddingIssue,
-              newIssue,
-              teamMembers,
-              handleAddIssue,
-              handleUpdateIssue,
-              setIsAddingIssue,
-              setIsEditingIssue,
-              setNewIssue,
-              false
-            )}
+            (isEstimatingStoryPoint ? (
+              <div className="flex flex-col items-center justify-evenly top-0 left-0 rounded-lg w-full h-[400px] z-[2] bg-black opacity-80">
+                <div className="flex items-center justify-evenly w-full">
+                  <Mosaic
+                    color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
+                    size="large"
+                  />
+                  <BlinkBlur
+                    color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
+                    size="small"
+                    text=""
+                    textColor=""
+                  />
+                  <Atom
+                    color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
+                    size="large"
+                    text=""
+                    textColor=""
+                  />
+                </div>
+                <h1
+                  className="text-3xl bg-gradient-to-r bg-clip-text  text-transparent 
+            from-[#32cd32] via-[#327fcd] to-[#cd8032]
+            animate-text"
+                >
+                  스토리 포인트 측정중{".".repeat(cnt.i)}
+                </h1>
+              </div>
+            ) : (
+              AddOrEditIssue(
+                currentIssueId,
+                isAddingIssue,
+                newIssue,
+                teamMembers,
+                handleAddIssue,
+                handleUpdateIssue,
+                setIsAddingIssue,
+                setIsEditingIssue,
+                setNewIssue,
+                false
+              )
+            ))}
 
           {Object.values(issues).flat().length > 0 ? (
             <div className="relative">
@@ -311,7 +345,11 @@ const ProjectDetailPage = () => {
                           textColor=""
                         />
                       </div>
-                      <h1 className="text-3xl text-white">
+                      <h1
+                        className="text-3xl bg-gradient-to-r bg-clip-text  text-transparent 
+            from-[#32cd32] via-[#327fcd] to-[#cd8032]
+            animate-text"
+                      >
                         Estimating Story Point{".".repeat(cnt.i)}
                       </h1>
                     </div>

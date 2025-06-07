@@ -10,12 +10,14 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white px-4 py-16 flex flex-col items-center justify-start text-center">
       {/* 헤더 */}
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4">
-        Sprint Mate에 오신 것을 환영합니다 🚀
+      <h1 className="flex items-center text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4">
+        <img className="w-14" src="../../../public/spaceship.png" />
+        SPEIS에 오신 것을 환영합니다
       </h1>
       <p className="text-lg sm:text-xl text-gray-600 max-w-xl mb-8">
-        이슈의 내용을 분석해 스토리 포인트를 예측하고, 팀의 협업과 일정 관리를
-        더 쉽게 만들어드립니다.
+        SPEIS (Story Point Estimator in Scrum)는 소프트웨어 개발 항목의 내용을
+        분석하여 예상 소요시간을 스토리포인트(SP)라는 단위로 예측하고, 팀의
+        협업과 일정 관리를 더 쉽게 만들어드리는 공간입니다.
       </p>
 
       {/* 로그인 여부에 따른 CTA */}
@@ -24,7 +26,7 @@ const HomePage = () => {
           onClick={() => navigate("/teams")}
           className="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition mb-12"
         >
-          내 팀으로 이동하기
+          나의 스페이스로 이동하기
         </button>
       ) : (
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -48,20 +50,29 @@ const HomePage = () => {
         <div className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition">
           <h3 className="text-xl font-bold mb-2">📊 SP 예측 자동화</h3>
           <p className="text-sm text-gray-600">
-            AI가 이슈 내용을 분석해 스토리 포인트를 자동으로 예측합니다.
+            AI가 이슈(개발 항목) 내용을 분석해 스토리 포인트를 자동으로
+            예측합니다.
           </p>
+          <br />
+          <img src="../../../public/ai.png" />
         </div>
         <div className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition">
           <h3 className="text-xl font-bold mb-2">📋 칸반 기반 이슈 관리</h3>
           <p className="text-sm text-gray-600">
-            프로젝트의 이슈를 칸반 보드로 시각적으로 관리할 수 있습니다.
+            프로젝트의 이슈를 일정에 따라 칸반 보드로 시각적으로 관리할 수
+            있습니다.
           </p>
+          <br />
+          <img src="../../../public/board.png" />
         </div>
         <div className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition">
           <h3 className="text-xl font-bold mb-2">🧑‍💻 역할 기반 팀 운영</h3>
           <p className="text-sm text-gray-600">
-            PO, SM, 개발자 역할을 구분해 팀을 체계적으로 운영할 수 있습니다.
+            OWNER, EDITOR, VIEWER 역할을 구분해 팀을 체계적으로 운영할 수
+            있습니다.
           </p>
+          <br />
+          <img src="../../../public/role.png" />
         </div>
       </section>
     </div>

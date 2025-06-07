@@ -18,10 +18,11 @@ const Navbar = ({ className }) => {
     >
       {/* Logo */}
       <div
-        className="font-bold text-2xl cursor-pointer"
+        className="flex items-center font-bold text-4xl cursor-pointer"
         onClick={() => navigate("/")}
       >
-        Point Finder
+        <img className="w-14" src="../../../public/spaceship.png" />
+        SPEIS
       </div>
 
       {/* Search (only if logged in) */}

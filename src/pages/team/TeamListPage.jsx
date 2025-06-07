@@ -17,6 +17,7 @@ const TeamListPage = () => {
       try {
         const response = await findTeamList(); // Fetch teams from API
         if (response && response.teams) {
+          console.log(response.teams);
           setTeams(response.teams); // Update state with the teams array
         } else {
           setTeams([]); // Fallback to an empty array if no teams are found
@@ -56,7 +57,7 @@ const TeamListPage = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">팀 목록</h1>
+      <h1 className="text-2xl font-bold mb-4">나의 팀 목록</h1>
       {teams.length === 0 ? (
         <p className="text-gray-500">등록된 팀이 없습니다.</p>
       ) : (
