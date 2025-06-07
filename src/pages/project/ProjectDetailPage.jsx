@@ -350,7 +350,7 @@ const ProjectDetailPage = () => {
             from-[#32cd32] via-[#327fcd] to-[#cd8032]
             animate-text"
                       >
-                        Estimating Story Point{".".repeat(cnt.i)}
+                        스토리 포인트 측정중{".".repeat(cnt.i)}
                       </h1>
                     </div>
                   )}

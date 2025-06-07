@@ -21,7 +21,7 @@ const Navbar = ({ className }) => {
         className="flex items-center font-bold text-4xl cursor-pointer"
         onClick={() => navigate("/")}
       >
-        <img className="w-14" src="../../../public/spaceship.png" />
+        <img className="w-14" src="/spaceship.png" />
         SPEIS
       </div>
 

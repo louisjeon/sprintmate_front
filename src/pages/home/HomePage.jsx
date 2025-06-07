@@ -11,7 +11,7 @@ const HomePage = () => {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white px-4 py-16 flex flex-col items-center justify-start text-center">
       {/* 헤더 */}
       <h1 className="flex items-center text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4">
-        <img className="w-14" src="../../../public/spaceship.png" />
+        <img className="w-14" src="/spaceship.png" />
         SPEIS에 오신 것을 환영합니다
       </h1>
       <p className="text-lg sm:text-xl text-gray-600 max-w-xl mb-8">
@@ -54,7 +54,7 @@ const HomePage = () => {
             예측합니다.
           </p>
           <br />
-          <img src="../../../public/ai.png" />
+          <img src="/ai.png" />
         </div>
         <div className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition">
           <h3 className="text-xl font-bold mb-2">📋 칸반 기반 이슈 관리</h3>
@@ -63,7 +63,7 @@ const HomePage = () => {
             있습니다.
           </p>
           <br />
-          <img src="../../../public/board.png" />
+          <img src="/board.png" />
         </div>
         <div className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition">
           <h3 className="text-xl font-bold mb-2">🧑‍💻 역할 기반 팀 운영</h3>
@@ -72,7 +72,7 @@ const HomePage = () => {
             있습니다.
           </p>
           <br />
-          <img src="../../../public/role.png" />
+          <img src="/role.png" />
         </div>
       </section>
     </div>
