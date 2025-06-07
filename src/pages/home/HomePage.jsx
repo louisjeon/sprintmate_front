@@ -16,7 +16,7 @@ const HomePage = () => {
       <p className="text-lg sm:text-xl text-gray-600 max-w-xl mb-8">
         SPEIS (Story Point Estimator in Scrum)는 소프트웨어 개발 항목의 내용을
         분석하여 예상 소요시간을 스토리포인트(SP)라는 단위로 예측하고, 팀의
-        협업과 일정 관리를 더 쉽게 만들어드리는 공간입니다.
+        협업과 일정 관리를 더 쉽게 만들어드리는 서비스입니다.
       </p>
 
       {/* 로그인 여부에 따른 CTA */}
