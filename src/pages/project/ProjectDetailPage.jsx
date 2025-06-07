@@ -88,6 +88,8 @@ const ProjectDetailPage = () => {
         teamMemberIds: newIssue.assignees,
       };
 
+      console.log(issueToCreate);
+
       const createdIssue = await apiCreateIssue(
         teamId,
         projectId,
