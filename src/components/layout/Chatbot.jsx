@@ -10,8 +10,9 @@ const Chatbot = () => {
 	const [answerLoading, setAnswerLoading] = useState(false);
 	const [showLoadingWarning, setShowLoadingWarning] = useState(false);
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-	const scrollRef = useRef();
 	const [dotCnt, setDotCnt] = useState(0);
+	const scrollRef = useRef();
+	const inputRef = useRef();
 
 	useEffect(() => {
 		if (chatBotOn & isAuthenticated) {
@@ -111,6 +112,7 @@ const Chatbot = () => {
 						)}
 					</div>
 					<input
+						ref={inputRef}
 						className="w-full bg-white border-gray-300 border-2 rounded h-10 pl-2 pr-2"
 						type="text"
 						placeholder="팀, 프로젝트 또는 다양한 주제에 관해 질문해주세요."
@@ -119,6 +121,7 @@ const Chatbot = () => {
 								e.key === "Enter" &&
 								e.nativeEvent.isComposing == false
 							) {
+								inputRef.current.blur();
 								if (!answerLoading) {
 									setChatHistory([
 										...chatHistory,
