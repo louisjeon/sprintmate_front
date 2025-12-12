@@ -46,7 +46,7 @@ const Chatbot = () => {
 	}, [answerLoading]);
 
 	const envokeModel = async (message, sent) => {
-		await useAgent(allInfo, message)
+		await useAgent(allInfo, message, isAuthenticated)
 			.then((ans) =>
 				setChatHistory([
 					...chatHistory,
