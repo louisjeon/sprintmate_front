@@ -1,12 +1,15 @@
-# React + Vite
+# Sprint Mate
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Agile co-work platform with RAG agent chatbot and storypoint auto estimator
 
-Currently, two official plugins are available:
+![img](image.png "screenshot")
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## Expanding the ESLint configuration
+![Tailwind CSS](https://getlogovector.com/wp-content/uploads/2021/01/tailwind-css-logo-vector.png)
+![LangChain](https://theaiinsider.tech/wp-content/uploads/2025/07/Screenshot-3112.png)
+![React](https://cdn.inflearn.com/wp-content/uploads/react.png?w=736)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Version Updates
+
+V2.0 - Chatbot Verson
