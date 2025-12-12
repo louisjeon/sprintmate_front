@@ -12,6 +12,7 @@ const API_ISSUES_BASE_PATH = (teamId, projectId) =>
  * @returns {Promise<IssueResponse>}
  */
 export const createIssue = async (teamId, projectId, issueCreateRequest) => {
+  console.log(issueCreateRequest);
   const response = await axiosInstance.post(
     API_ISSUES_BASE_PATH(teamId, projectId),
     issueCreateRequest

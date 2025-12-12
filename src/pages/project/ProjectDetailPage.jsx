@@ -97,6 +97,8 @@ const ProjectDetailPage = () => {
         issueToCreate
       );
 
+      console.log(createdIssue);
+
       setIsEstimatingStoryPoint(false);
 
       const newIssues = { ...issues };
