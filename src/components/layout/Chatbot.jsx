@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import getAllInfo from "../../utils/getAllInfo";
 import useAgent from "../../hooks/useAgent";
+import { useAuthStore } from "../../stores/authStore";
 
 const Chatbot = () => {
 	const [chatBotOn, setChatbotOn] = useState(false);
@@ -8,9 +9,10 @@ const Chatbot = () => {
 	const [chatHistory, setChatHistory] = useState([]);
 	const [answerLoading, setAnswerLoading] = useState(false);
 	const [showLoadingWarning, setShowLoadingWarning] = useState(false);
+	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
 	useEffect(() => {
-		if (chatBotOn) {
+		if (chatBotOn & isAuthenticated) {
 			const setInfo = async () => {
 				const info = await getAllInfo();
 				setAllInfo(info);
@@ -89,9 +91,12 @@ const Chatbot = () => {
 					<input
 						className="w-full bg-white border-gray-300 border-2 rounded h-10 pl-2 pr-2"
 						type="text"
-						placeholder="애자일에 관해 질문해주세요."
+						placeholder="팀, 프로젝트 또는 다양한 주제에 관해 질문해주세요."
 						onKeyDown={(e) => {
-							if (e.key === "Enter") {
+							if (
+								e.key === "Enter" &&
+								e.nativeEvent.isComposing == false
+							) {
 								if (!answerLoading) {
 									setChatHistory([
 										...chatHistory,
