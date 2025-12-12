@@ -32,6 +32,12 @@ const Chatbot = () => {
 	}, [chatHistory]);
 
 	useEffect(() => {
+		if (!isAuthenticated) {
+			setChatHistory([]);
+		}
+	}, [isAuthenticated]);
+
+	useEffect(() => {
 		if (answerLoading) {
 			const timer = setInterval(() => {
 				console.log(dotCnt);
