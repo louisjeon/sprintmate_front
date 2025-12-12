@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import getAllInfo from "../../utils/getAllInfo";
 import useAgent from "../../hooks/useAgent";
 import { useAuthStore } from "../../stores/authStore";
@@ -10,6 +10,7 @@ const Chatbot = () => {
 	const [answerLoading, setAnswerLoading] = useState(false);
 	const [showLoadingWarning, setShowLoadingWarning] = useState(false);
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+	const scrollRef = useRef();
 
 	useEffect(() => {
 		if (chatBotOn & isAuthenticated) {
@@ -22,8 +23,15 @@ const Chatbot = () => {
 		console.log(allInfo);
 	}, [chatBotOn]);
 
+	useEffect(() => {
+		if (scrollRef.current) {
+			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+		}
+	}, [chatHistory]);
+
 	const envokeModel = async (message, sent) => {
 		console.log("AAA");
+
 		await useAgent(allInfo, message)
 			.then((ans) =>
 				setChatHistory([
@@ -50,22 +58,18 @@ const Chatbot = () => {
 				챗봇
 			</h1>
 			{chatBotOn && (
-				<div className="absolute flex flex-col justify-between w-96 h-[600px] right-0 bottom-16 text-black">
-					{answerLoading && (
-						<div className="absolute flex rounded h-10 w-full bg-blue-500 text-white animate-[fadeOut_3s_linear_forwards]">
-							<h1 className="m-auto">
-								에이전트가 답변중입니다...
-							</h1>
-						</div>
-					)}
-					{showLoadingWarning && (
-						<div className="absolute flex rounded h-10 w-full bg-red-500 text-white animate-[fadeOut_3s_linear_forwards]">
-							<h1 className="m-auto">
-								에이전트가 답변중입니다...
-							</h1>
-						</div>
-					)}
-					<div className="flex flex-col w-full h-full bg-white border-gray-300 border-2 rounded cursor-default">
+				<div className="absolute flex flex-col z-10 justify-between w-[calc(100vw-40px)] max-w-96 h-[calc(100vh-100px)] max-h-[600px] right-0 bottom-16 text-black">
+					<div
+						ref={scrollRef}
+						className="flex flex-col w-full h-full bg-white border-gray-300 border-2 rounded cursor-default overflow-scroll"
+					>
+						{showLoadingWarning && (
+							<div className="absolute flex -mt-10 rounded h-10 w-full bg-red-500 text-white animate-[fadeOut_3s_linear_forwards]">
+								<h1 className="m-auto">
+									에이전트가 답변중입니다...
+								</h1>
+							</div>
+						)}
 						{chatHistory.map((chat, i) => {
 							let styleStr = "";
 							switch (chat.type) {
@@ -73,7 +77,7 @@ const Chatbot = () => {
 									styleStr = "bg-gray-200 self-end";
 									break;
 								case "received":
-									styleStr = "bg-blue-500";
+									styleStr = "bg-blue-500 text-white";
 									break;
 							}
 							return (
@@ -87,6 +91,11 @@ const Chatbot = () => {
 								</div>
 							);
 						})}
+						{answerLoading && (
+							<div className="rounded p-1 m-1 w-4/6 bg-blue-500 text-white">
+								에이전트가 답변중입니다...
+							</div>
+						)}
 					</div>
 					<input
 						className="w-full bg-white border-gray-300 border-2 rounded h-10 pl-2 pr-2"
