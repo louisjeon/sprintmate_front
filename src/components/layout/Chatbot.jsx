@@ -11,6 +11,7 @@ const Chatbot = () => {
 	const [showLoadingWarning, setShowLoadingWarning] = useState(false);
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 	const scrollRef = useRef();
+	const [dotCnt, setDotCnt] = useState(0);
 
 	useEffect(() => {
 		if (chatBotOn & isAuthenticated) {
@@ -29,9 +30,21 @@ const Chatbot = () => {
 		}
 	}, [chatHistory]);
 
-	const envokeModel = async (message, sent) => {
-		console.log("AAA");
+	useEffect(() => {
+		if (answerLoading) {
+			const timer = setInterval(() => {
+				console.log(dotCnt);
+				setDotCnt((prev) => (prev + 1) % 3);
+			}, 200);
+			return () => {
+				clearInterval(timer);
+			};
+		} else {
+			setDotCnt(0);
+		}
+	}, [answerLoading]);
 
+	const envokeModel = async (message, sent) => {
 		await useAgent(allInfo, message)
 			.then((ans) =>
 				setChatHistory([
@@ -93,7 +106,7 @@ const Chatbot = () => {
 						})}
 						{answerLoading && (
 							<div className="rounded p-1 m-1 w-4/6 bg-blue-500 text-white">
-								에이전트가 답변중입니다...
+								에이전트가 답변중입니다{".".repeat(dotCnt)}
 							</div>
 						)}
 					</div>

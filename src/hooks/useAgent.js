@@ -24,7 +24,7 @@ const useAgent = async (content, question) => {
 	const chain = PROMPT.pipe(model).pipe(new StringOutputParser());
 	const response = await chain.invoke({ content, question });
 	console.log(response);
-	return response.replace(/``````/g, "").trim();
+	return response.replaceAll("**", "").trim();
 };
 
 export default useAgent;
