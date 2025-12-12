@@ -2,6 +2,7 @@
 
 Agile co-work platform with RAG agent chatbot and storypoint auto estimator
 
+![img2](image2.png "screenshot2")
 ![img](image.png "screenshot")
 
 ## Tech Stack
