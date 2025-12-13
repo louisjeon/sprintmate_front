@@ -15,12 +15,24 @@ const Chatbot = () => {
 	const inputRef = useRef();
 
 	useEffect(() => {
-		if (chatBotOn & isAuthenticated) {
-			const setInfo = async () => {
-				const info = await getAllInfo();
-				setAllInfo(info);
-			};
-			setInfo();
+		if (chatBotOn) {
+			if (chatHistory.length === 0) {
+				setChatHistory([
+					...chatHistory,
+					{
+						type: "received",
+						message:
+							"안녕하세요! Mistral AI를 사용하는 SPEIS의 챗봇입니다. 팀, 프로젝트 등 다양한 주제에 대해 질문해주세요🤗",
+					},
+				]);
+			}
+			if (isAuthenticated) {
+				const setInfo = async () => {
+					const info = await getAllInfo();
+					setAllInfo(info);
+				};
+				setInfo();
+			}
 		}
 	}, [chatBotOn]);
 
@@ -119,7 +131,7 @@ const Chatbot = () => {
 						ref={inputRef}
 						className="w-full bg-white border-gray-300 border-2 rounded h-10 pl-2 pr-2"
 						type="text"
-						placeholder="팀, 프로젝트 또는 다양한 주제에 관해 질문해주세요."
+						placeholder="팀, 프로젝트 또는 다양한 주제에 대해 질문해주세요."
 						onKeyDown={(e) => {
 							if (
 								e.key === "Enter" &&
