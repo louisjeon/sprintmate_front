@@ -1,6 +1,6 @@
 # SPEIS (Story Point Estimator In Scrum)
 
-Agile co-work platform with RAG agent chatbot and storypoint auto estimator
+Agile collaboration platform with RAG agent chatbot and storypoint auto estimator
 
 ![screenshot1](readme_img/01.png "screenshot1")
 ![screenshot2](readme_img/02.png "screenshot2")
