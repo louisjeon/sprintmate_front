@@ -1,4 +1,4 @@
-# Sprint Mate
+# SPEIS (Story Point Estimator In Scrum)
 
 Agile co-work platform with RAG agent chatbot and storypoint auto estimator
 
