@@ -22,7 +22,6 @@ const Chatbot = () => {
 			};
 			setInfo();
 		}
-		console.log(allInfo);
 	}, [chatBotOn]);
 
 	useEffect(() => {
@@ -40,8 +39,7 @@ const Chatbot = () => {
 	useEffect(() => {
 		if (answerLoading) {
 			const timer = setInterval(() => {
-				console.log(dotCnt);
-				setDotCnt((prev) => (prev + 1) % 3);
+				setDotCnt((prev) => (prev + 1) % 4);
 			}, 200);
 			return () => {
 				clearInterval(timer);
